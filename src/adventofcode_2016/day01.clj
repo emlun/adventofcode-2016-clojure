@@ -61,14 +61,8 @@
   )
 )
 
-(def start-state
-  {
-    :pos { :x 0, :y 0 }
-    :dir { :x 1, :y 0 }
-  }
-)
 (defn find-bunny-hq-a
-  [steps]
+  [steps start-state]
   (:pos (reduce walk-step start-state steps))
 )
 
@@ -78,7 +72,7 @@
   )
 )
 (defn find-bunny-hq-b
-  [steps]
+  [steps start-state]
   (let [ steps (mapcat expand-step steps)
          states (reductions walk-step start-state steps)
        ]
@@ -91,7 +85,7 @@
   [input-lines & args]
   (doseq [ [problem solve] [["Subproblem A:" find-bunny-hq-a] ["Subproblem B:" find-bunny-hq-b]] ]
     (do
-      (def bunny-hq  (solve (mapcat extract-steps input-lines)))
+      (def bunny-hq  (solve (mapcat extract-steps input-lines) { :pos { :x 0, :y 0 } :dir { :x 1, :y 0 } }))
       (println problem)
       (println "Location of Bunny HQ:" bunny-hq)
       (println "Distance:" (apply + (map abs (map second (seq bunny-hq)))))
