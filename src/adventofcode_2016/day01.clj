@@ -41,14 +41,12 @@
 )
 
 (defn extract-steps [line]
-  (mapcat expand-step
-    (map
-      (fn [word]
-        { :turn (to-turn word)
-          :dist (read-string (apply str (rest word))) }
-      )
-      (clojure.string/split (clojure.string/trim line) #"\s+")
+  (map
+    (fn [word]
+      { :turn (to-turn word)
+        :dist (read-string (apply str (rest word))) }
     )
+    (clojure.string/split (clojure.string/trim line) #"\s+")
   )
 )
 
@@ -83,7 +81,7 @@
 )
 (defn find-bunny-hq-b
   [lines]
-  (let [ steps (mapcat extract-steps lines)
+  (let [ steps (mapcat expand-step (mapcat extract-steps lines))
          states (reductions walk-step start-state steps)
        ]
     (map second (seq (first-recurrence (map :pos states))))
