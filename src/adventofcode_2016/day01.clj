@@ -16,6 +16,7 @@
   { :pre [(map? dir) (number? (:x dir)) (number? (:y dir)) (keyword? turn)] }
   (case turn
     :left { :x (:y dir), :y (- (:x dir)) }
+    :forward dir
     :right  { :x (- (:y dir)), :y (:x dir) }
   )
 )
@@ -33,13 +34,38 @@
   )
 )
 
+(defn expand-step [step]
+  (cons (assoc step :dist 1)
+        (repeat (dec (:dist step)) { :turn :forward, :dist 1 })
+  )
+)
+
 (defn extract-steps [line]
-  (map
-    (fn [word]
-      { :turn (to-turn word)
-        :dist (read-string (apply str (rest word))) }
+  (mapcat expand-step
+    (map
+      (fn [word]
+        { :turn (to-turn word)
+          :dist (read-string (apply str (rest word))) }
+      )
+      (clojure.string/split (clojure.string/trim line) #"\s+")
     )
-    (clojure.string/split (clojure.string/trim line) #"\s+")
+  )
+)
+
+(defn first-recurrence
+  ( [future]
+    { :pre (seq? future) }
+      (first-recurrence #{} future)
+  )
+  ( [history [present & future]]
+    { :pre [(or (seq? future) (nil? future)) (coll? history)] }
+      (if (nil? present)
+        nil
+        (if (contains? history present)
+          present
+          (first-recurrence (conj history present) future)
+        )
+      )
   )
 )
 
@@ -49,19 +75,30 @@
     :dir { :x 1, :y 0 }
   }
 )
-(defn find-bunny-hq
+(defn find-bunny-hq-a
   [lines]
   (let [ steps (mapcat extract-steps lines) ]
     (map second (seq (:pos (reduce walk-step start-state steps))))
+  )
+)
+(defn find-bunny-hq-b
+  [lines]
+  (let [ steps (mapcat extract-steps lines)
+         states (reductions walk-step start-state steps)
+       ]
+    (map second (seq (first-recurrence (map :pos states))))
   )
 )
 
 (defn solve
   "solve day 1 of Advent of Code 2016"
   [input-lines & args]
-  (do
-    (def bunny-hq (find-bunny-hq input-lines))
-    (println "Location of Bunny HQ:" bunny-hq)
-    (println "Distance:" (apply + (map abs bunny-hq)))
+  (doseq [ [problem solve] [["Subproblem A:" find-bunny-hq-a] ["Subproblem B:" find-bunny-hq-b]] ]
+    (do
+      (def bunny-hq (solve input-lines))
+      (println problem)
+      (println "Location of Bunny HQ:" bunny-hq)
+      (println "Distance:" (apply + (map abs bunny-hq)))
+    )
   )
 )
