@@ -4,13 +4,17 @@
   (:require adventofcode-2016.day01)
 )
 
+(defn pad [day] (if (< 1 (count day)) day (str "0" day)))
+
 (defn -main
-  "run the solver for the given day with lines from standard input as argument"
-  [day & args]
-  (do
-    (def padded-day (if (< 1 (count day)) day (str "0" day)))
-    (def lines (clojure.string/split-lines (slurp *in*)))
-    (def solve (resolve (symbol (str "adventofcode-2016.day" padded-day) "solve")))
-    (println (solve lines))
+  "Run the solver for the given day with lines from file as argument. If file is -, use standard input; if not given, use default."
+  ([day] (-main day (str "resources/day" (pad day) ".in")))
+  ([day file & args]
+    (do
+      (def input (if (= "-" file) *in* file))
+      (def lines (clojure.string/split-lines (slurp input)))
+      (def solve (resolve (symbol (str "adventofcode-2016.day" (pad day)) "solve")))
+      (println (solve lines))
+    )
   )
 )
