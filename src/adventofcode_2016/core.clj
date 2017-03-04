@@ -14,7 +14,7 @@
       (def input (if (= "-" file) *in* file))
       (def lines (clojure.string/split-lines (slurp input)))
       (def solve (resolve (symbol (str "adventofcode-2016.day" (pad day)) "solve")))
-      (println (solve lines))
+      (solve lines)
     )
   )
 )
