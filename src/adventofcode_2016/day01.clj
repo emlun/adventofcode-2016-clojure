@@ -15,8 +15,8 @@
   [dir turn]
   { :pre [(map? dir) (number? (:x dir)) (number? (:y dir)) (keyword? turn)] }
   (case turn
-    :left { :x (:y dir) :y (- (:x dir)) }
-    :right  { :x (- (:y dir)) :y (:x dir) }
+    :left { :x (:y dir), :y (- (:x dir)) }
+    :right  { :x (- (:y dir)), :y (:x dir) }
   )
 )
 
@@ -45,8 +45,8 @@
 
 (def start-state
   {
-    :pos { :x 0 :y 0 }
-    :dir { :x 1 :y 0 }
+    :pos { :x 0, :y 0 }
+    :dir { :x 1, :y 0 }
   }
 )
 (defn find-bunny-hq
