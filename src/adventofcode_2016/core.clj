@@ -7,7 +7,13 @@
 (defn pad [day] (if (< 1 (count day)) day (str "0" day)))
 
 (defn -main
-  "Run the solver for the given day with lines from file as argument. If file is -, use standard input; if not given, use default."
+  "Run the solver for the given day (or all) with lines from file as argument. If file is -, use standard input; if not given, use default."
+  ([]
+    (doseq [day (range 1 2)]
+      (println "\n===" "Day" day "===\n")
+      (-main (str day))
+    )
+  )
   ([day] (-main day (str "resources/day" (pad day) ".in")))
   ([day file & args]
     (do
