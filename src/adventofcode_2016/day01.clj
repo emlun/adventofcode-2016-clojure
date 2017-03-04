@@ -34,12 +34,6 @@
   )
 )
 
-(defn expand-step [step]
-  (cons (assoc step :dist 1)
-        (repeat (dec (:dist step)) { :turn :forward, :dist 1 })
-  )
-)
-
 (defn extract-steps [line]
   (map
     (fn [word]
@@ -76,6 +70,12 @@
 (defn find-bunny-hq-a
   [steps]
   (:pos (reduce walk-step start-state steps))
+)
+
+(defn expand-step [step]
+  (cons (assoc step :dist 1)
+        (repeat (dec (:dist step)) { :turn :forward, :dist 1 })
+  )
 )
 (defn find-bunny-hq-b
   [steps]
