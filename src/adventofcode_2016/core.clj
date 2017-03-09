@@ -2,6 +2,7 @@
   (:gen-class)
   (:require clojure.string)
   (:require adventofcode-2016.day01)
+  (:require adventofcode-2016.day02)
 )
 
 (defn pad [day] (if (< 1 (count day)) day (str "0" day)))
