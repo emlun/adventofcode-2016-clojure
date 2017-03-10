@@ -30,16 +30,12 @@
 
 (defn walk [moves startButton line]
   (reduce
-    (fn [currentButton move]
-      (get (get moves currentButton) (keyword (str move)))
-    )
+    #(get-in moves [%1 (keyword (str %2))])
     startButton
-    line)
-  )
+    line))
 
 (defn execute [initialButton moves lines]
-  (rest (reductions (fn [b l] (walk moves b l)) initialButton lines))
-  )
+  (rest (reductions (partial walk moves) initialButton lines)))
 
 (defn solve
   "solve day 2 of Advent of Code 2016"
