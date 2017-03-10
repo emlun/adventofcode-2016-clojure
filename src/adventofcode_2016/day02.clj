@@ -45,9 +45,7 @@
   "solve day 2 of Advent of Code 2016"
   [input-lines & args]
   (doseq [ [problem moves] [["Subproblem A:" moves1] ["Subproblem B:" moves2]] ]
-    (do
-      (println problem)
-      (println (execute :5 moves input-lines))
-    )
+    (println problem)
+    (println (execute :5 moves input-lines))
   )
 )
