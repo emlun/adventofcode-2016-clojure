@@ -55,7 +55,7 @@
         nil
         (if (contains? history present)
           present
-          (first-recurrence (conj history present) future)
+          (recur (conj history present) future)
         )
       )
   )
