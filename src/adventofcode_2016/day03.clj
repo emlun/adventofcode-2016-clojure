@@ -8,6 +8,19 @@
     (filter (fn [[a b c]] (> (+ a b) c)))
   ))
 
+(defn grouped [n x]
+  "Return elements in x in groups of n"
+  (loop [result [] remain x]
+    (cond
+      (= n (count result))
+        (cons result (grouped n remain))
+      (seq remain)
+        (recur (conj result (first remain)) (rest remain))
+      (seq result)
+        (conj [] result)
+      :else []
+    )))
+
 (defn to-numbers [line]
   (map read-string (clojure.string/split (clojure.string/trim line) #"\s+")))
 
