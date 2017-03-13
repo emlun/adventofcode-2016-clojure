@@ -3,11 +3,10 @@
 )
 
 (defn possible-triangles [triangles]
-  (do
-    (def sorted (map sort triangles))
-    (def possible (filter (fn [[a b c]] (> (+ a b) c)) sorted))
-    possible
-    ))
+  (->> triangles
+    (map sort)
+    (filter (fn [[a b c]] (> (+ a b) c)))
+  ))
 
 (defn to-numbers [line]
   (map read-string (clojure.string/split (clojure.string/trim line) #"\s+")))
@@ -16,10 +15,10 @@
   (possible-triangles (map to-numbers lines)))
 
 (defn solveB [lines]
-  (do
-    (defn line-groups map to-numbers lines)
-    (possible-triangles line-groups)
-    ))
+  (->> lines
+    (map to-numbers)
+    (possible-triangles)
+  ))
 
 (defn solve
   "solve day 3 of Advent of Code 2016"
