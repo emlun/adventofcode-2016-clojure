@@ -67,6 +67,7 @@
 )
 
 (defn expand-step [step]
+  "Expand all steps on the form DN (D: direction; N: length) with one D1 step and N-1 forward steps"
   (cons (assoc step :dist 1)
         (repeat (dec (:dist step)) { :turn :forward, :dist 1 })
   )
