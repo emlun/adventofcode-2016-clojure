@@ -12,12 +12,12 @@
 )
 
 (defn rotate
-  [dir turn]
-  { :pre [(map? dir) (number? (:x dir)) (number? (:y dir)) (keyword? turn)] }
+  [{ :keys [x y] :as dir } turn]
+  { :pre [(number? x) (number? y) (keyword? turn)] }
   (case turn
-    :left { :x (:y dir), :y (- (:x dir)) }
+    :left { :x y, :y (- x) }
     :forward dir
-    :right  { :x (- (:y dir)), :y (:x dir) }
+    :right  { :x (- y), :y x }
   )
 )
 
