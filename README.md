@@ -1,36 +1,18 @@
 # adventofcode-2016-clojure
 
-FIXME: description
+Clojure practice for [a 2017 study group run by Mejsla][mejsla].
 
-## Installation
-
-Download from http://example.com/FIXME.
+[mejsla]: http://www.mejsla.se/cirkel2017
 
 ## Usage
 
-FIXME: explanation
+Assuming Leiningen is installed:
 
-    $ java -jar adventofcode-2016-clojure-0.1.0-standalone.jar [args]
-
-## Options
-
-FIXME: listing of options this app accepts.
-
-## Examples
-
-...
-
-### Bugs
-
-...
-
-### Any Other Sections
-### That You Think
-### Might be Useful
+    $ lein run
 
 ## License
 
-Copyright © 2017 FIXME
+Copyright © 2017 Emil Lundberg
 
-Distributed under the Eclipse Public License either version 1.0 or (at
-your option) any later version.
+Distributed under the GNU General Public License, version 3 or (at your option)
+any later version.
