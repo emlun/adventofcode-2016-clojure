@@ -8,8 +8,20 @@
     (filter (fn [[a b c]] (> (+ a b) c)))
   ))
 
-(defn grouped [n x]
+(defn grouped
   "Return elements in x in groups of n"
+  {
+    :test #(do
+             (assert (= [] (grouped 5 [])))
+             (assert (= [] (grouped 5 [])))
+             (assert (= [[0] [1] [2]] (grouped 1 [0 1 2])))
+             (assert (= [[0]] (grouped 3 [0])))
+             (assert (= [[0 1]] (grouped 3 [0 1])))
+             (assert (= [[0 1 2]] (grouped 3 [0 1 2])))
+             (assert (= [[0 1 2] [3]] (grouped 3 [0 1 2 3])))
+             )
+  }
+  [n x]
   (loop [result [] remain x]
     (cond
       (= n (count result))
