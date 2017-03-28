@@ -60,6 +60,9 @@
 (defn solve-b [lines]
   (->> lines
     (map to-numbers)
+    (grouped 3)
+    (map transpose)
+    (apply concat)
     (possible-triangles)
   ))
 
@@ -67,6 +70,6 @@
   "solve day 3 of Advent of Code 2016"
   [input-lines & args]
   (doseq [ [problem solver] [["Subproblem A:" solve-a] ["Subproblem B:" solve-b]] ]
-    (println problem (apply str (map name (solver input-lines))))
+    (println problem (str (count (solver input-lines))))
   )
 )
