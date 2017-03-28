@@ -2,12 +2,6 @@
   (:require clojure.string)
 )
 
-(defn possible-triangles [triangles]
-  (->> triangles
-    (map sort)
-    (filter (fn [[a b c]] (> (+ a b) c)))
-  ))
-
 (defn grouped
   "Return elements in x in groups of n"
   {
@@ -49,6 +43,12 @@
   (if (seq seqs)
     (apply map (cons vector seqs))
     ()
+  ))
+
+(defn possible-triangles [triangles]
+  (->> triangles
+    (map sort)
+    (filter (fn [[a b c]] (> (+ a b) c)))
   ))
 
 (defn to-numbers [line]
