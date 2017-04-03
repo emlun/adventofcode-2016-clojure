@@ -61,8 +61,7 @@
   (->> lines
     (map to-numbers)
     (grouped 3)
-    (map transpose)
-    (apply concat)
+    (mapcat transpose)
     (possible-triangles)
   ))
 
