@@ -1,7 +1,7 @@
 (ns adventofcode-2016.day01
   (:gen-class)
   (:require [clojure.string])
-  (:require [adventofcode-2016.util :refer (abs)])
+  (:require [adventofcode-2016.util :refer (abs first-recurrence)])
 )
 
 (defn to-turn [word]
@@ -41,23 +41,6 @@
         :dist (read-string (apply str (rest word))) }
     )
     (clojure.string/split (clojure.string/trim line) #"\s+")
-  )
-)
-
-(defn first-recurrence
-  ( [future]
-    { :pre (seq? future) }
-      (first-recurrence #{} future)
-  )
-  ( [history [present & future]]
-    { :pre [(or (seq? future) (nil? future)) (coll? history)] }
-      (if (nil? present)
-        nil
-        (if (contains? history present)
-          present
-          (recur (conj history present) future)
-        )
-      )
   )
 )
 
