@@ -1,7 +1,7 @@
 (ns adventofcode-2016.day01
   (:gen-class)
   (:require [clojure.string])
-  (:require [adventofcode-2016.math :refer (abs)])
+  (:require [adventofcode-2016.util :refer (abs)])
 )
 
 (defn to-turn [word]

@@ -1,4 +1,4 @@
-(ns adventofcode-2016.math
+(ns adventofcode-2016.util
 )
 
 (defn abs
