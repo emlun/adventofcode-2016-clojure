@@ -16,7 +16,6 @@
     (map read-string)
   ))
 
-
 (defn solve-a [lines]
   (->> lines
     (map to-numbers)
