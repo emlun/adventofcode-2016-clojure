@@ -55,7 +55,10 @@
   (map read-string (clojure.string/split (clojure.string/trim line) #"\s+")))
 
 (defn solve-a [lines]
-  (possible-triangles (map to-numbers lines)))
+  (->> lines
+    (map to-numbers)
+    (possible-triangles)
+  ))
 
 (defn solve-b [lines]
   (->> lines
