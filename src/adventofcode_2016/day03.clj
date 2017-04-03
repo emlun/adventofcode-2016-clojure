@@ -1,6 +1,6 @@
 (ns adventofcode-2016.day03
   (:require clojure.string)
-  (:require [adventofcode-2016.util :refer (grouped)])
+  (:require [adventofcode-2016.util :refer (flip grouped)])
 )
 
 (defn transpose
@@ -28,7 +28,12 @@
   ))
 
 (defn to-numbers [line]
-  (map read-string (clojure.string/split (clojure.string/trim line) #"\s+")))
+  (->> line
+    (clojure.string/trim)
+    (flip clojure.string/split #"\s+")
+    (map read-string)
+  ))
+
 
 (defn solve-a [lines]
   (->> lines
