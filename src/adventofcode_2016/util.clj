@@ -25,6 +25,19 @@
   )
 )
 
+(defn flip
+  "Apply f and its following arguments with the first two arguments flipped"
+  {
+   :test (fn []
+            (assert (= (flip - 5 1) (- 1 5)))
+            (assert (= (flip - 5 1 3) (- 1 5 3)))
+            (assert (= (flip - 5 1 3 3) (- 1 5 3 3)))
+            (assert (= (flip map [1 2 3] #(+ 3 %)) (map #(+ 3 %) [1 2 3])))
+            )
+   }
+  [f a b & more]
+  (apply f (cons b (cons a more))))
+
 (defn grouped
   "Return elements in x in groups of n"
   {
