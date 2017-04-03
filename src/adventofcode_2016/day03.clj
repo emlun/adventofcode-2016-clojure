@@ -34,6 +34,6 @@
   "solve day 3 of Advent of Code 2016"
   [input-lines & args]
   (doseq [ [problem solver] [["Subproblem A:" solve-a] ["Subproblem B:" solve-b]] ]
-    (println problem (str (count (solver input-lines))))
+    (println problem (count (solver input-lines)))
   )
 )
