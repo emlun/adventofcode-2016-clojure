@@ -110,6 +110,7 @@
             (assert (= (transpose [[1 2] [3 4]]) [[1 3] [2 4]]), "Transpose of 2x2 matrix is matrix transpose")
             (assert (= (transpose [[1 2] []]) []), "Rows are truncated to shortest row")
             (assert (= (transpose [[1 2] [3]]) [[1 3]]), "Rows are truncated to shortest row")
+            (assert (= (transpose (transpose [[1 2] [3 4]])) [[1 2] [3 4]]), "Transpose is its own inverse")
             )
    }
   [seqs]
