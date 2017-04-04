@@ -3,14 +3,13 @@
   (:require [adventofcode-2016.util :refer (count= transpose)])
 )
 
+(defn sort-by-frequency [ xs ]
+  (sort-by #(count= % xs) xs))
+
 (defn solve-base [lines]
   (->> lines
     (transpose)
-    (map (fn [column]
-           (sort-by
-             #(count= % column)
-             column
-           )))
+    (map sort-by-frequency)
   ))
 
 (defn solve-a [lines]
