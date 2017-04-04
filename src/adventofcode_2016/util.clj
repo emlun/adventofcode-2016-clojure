@@ -5,6 +5,7 @@
 
 (defn abs
   "absolute value"
+  { :test #(assert (= 1 (abs 1) (abs -1))) }
   [n]
   { :pre [(number? n)] :post [(number? %)]}
   (max n (-' n))
