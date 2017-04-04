@@ -1,11 +1,45 @@
 (ns adventofcode-2016.util
 )
 
+(declare count-filter)
+
 (defn abs
   "absolute value"
   [n]
   { :pre [(number? n)] :post [(number? %)]}
   (max n (-' n))
+)
+
+(defn count=
+  "([value] [value coll])
+  Shortcut for (count (filter #(= value %) coll)). Returns a curried function if called without coll."
+  {
+   :test #(do
+            (assert (= 2 (count= 5 [1 2 5 3 5 7])))
+            (assert (= [1 2] (map (count= 5) [[1 5] [5 2 5]])))
+            )
+  }
+  ([ value ]
+    (fn [ coll ] (count-filter #(= value %) coll)))
+
+  ([ value coll ]
+    ((count= value) coll))
+)
+
+(defn count-filter
+  "([pred] [pred coll])
+  Shortcut for (count (filter pred coll)). Returns a curried function if called without coll."
+  {
+   :test (fn []
+           (assert (= 2 (count-filter #(= 5 %) [1 2 5 3 5 7])))
+           (assert (= [1 2] (map (count-filter #(= 5 %)) [[1 5] [5 2 5]])))
+           )
+  }
+  ([ pred coll ]
+    ((count-filter pred) coll))
+
+  ([ pred ]
+    (fn [ coll ] (count (filter pred coll))))
 )
 
 (defn first-recurrence

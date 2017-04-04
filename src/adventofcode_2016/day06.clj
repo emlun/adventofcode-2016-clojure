@@ -1,6 +1,6 @@
 (ns adventofcode-2016.day06
   (:require clojure.string)
-  (:require [adventofcode-2016.util :refer (transpose)])
+  (:require [adventofcode-2016.util :refer (count= transpose)])
 )
 
 (defn solve-base [lines]
@@ -8,7 +8,7 @@
     (transpose)
     (map (fn [column]
            (sort-by
-             (fn [ c ] (count (filter #(= c %) column)))
+             #(count= % column)
              column
            )))
   ))

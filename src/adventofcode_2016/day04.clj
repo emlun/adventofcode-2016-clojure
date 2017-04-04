@@ -1,6 +1,6 @@
 (ns adventofcode-2016.day04
   (:require clojure.string)
-  (:require [adventofcode-2016.util :refer (flip)])
+  (:require [adventofcode-2016.util :refer (count= flip)])
 )
 
 (def alphabet "abcdefghijklmnopqrstuvwxyz")
@@ -44,7 +44,7 @@
                             (set)
                             (flip disj \-)
                             (sort-by (fn [c] ; Sort by descending order of frequency, with natural order as tiebreaker
-                                       [ (- (count (filter #(= % c) room-name))), c ]
+                                       [ (-(count= c room-name)), c ]
                                        ))
                             (take 5)
                             (apply str)
