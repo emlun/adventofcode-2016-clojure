@@ -1,6 +1,6 @@
 (ns adventofcode-2016.day03
   (:require clojure.string)
-  (:require [adventofcode-2016.util :refer (flip grouped transpose)])
+  (:require [adventofcode-2016.util :refer (flip transpose)])
 )
 
 (defn possible-triangles [triangles]
@@ -25,7 +25,7 @@
 (defn solve-b [lines]
   (->> lines
     (map to-numbers)
-    (grouped 3)
+    (partition 3)
     (mapcat transpose)
     (possible-triangles)
   ))
