@@ -44,10 +44,13 @@
 )
 
 (defn first-recurrence
+  { :test #(assert (= 5 (first-recurrence [1 5 2 5 2]))) }
+
   ( [future]
     { :pre (seq? future) }
       (first-recurrence #{} future)
   )
+
   ( [history [present & future]]
     { :pre [(or (seq? future) (nil? future)) (coll? history)] }
       (if (nil? present)
