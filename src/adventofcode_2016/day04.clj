@@ -43,9 +43,7 @@
         expected-checksum (->> room-name
                             (set)
                             (flip disj \-)
-                            (sort-by (fn [c] ; Sort by descending order of frequency, with natural order as tiebreaker
-                                       [ (-(count= c room-name)), c ]
-                                       ))
+                            (sort-by (juxt #(-(count= % room-name)) identity))
                             (take 5)
                             (apply str)
                             )
