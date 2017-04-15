@@ -76,6 +76,19 @@
   [f a b & more]
   (apply f (cons b (cons a more))))
 
+(defn splits [coll]
+  { :test #(let [f splits] (do
+             (is (= (f []) []))
+             (is (= (f [0]) []))
+             (is (= (f [0 1]) [ [[0] [1]] ]))
+             (is (= (f [0 1 2]) [ [[0] [1 2]] [[0 1] [2]] ]))
+             )) }
+  (loop [result []
+         remaining coll]
+    (if-left [more (seq remaining)])
+  )
+)
+
 (defn transpose
   "Transform seq [[a1 a2 ...] [b1 b2 ...] ...] to seq [[a1 b1 ...] [a2 b2 ...] ...]"
   {
