@@ -1,4 +1,5 @@
 (ns adventofcode-2016.util
+  (:require [clojure.test :refer [is]])
 )
 
 (declare count-filter)
@@ -76,17 +77,31 @@
   [f a b & more]
   (apply f (cons b (cons a more))))
 
-(defn splits [coll]
-  { :test #(let [f splits] (do
-             (is (= (f []) []))
-             (is (= (f [0]) []))
-             (is (= (f [0 1]) [ [[0] [1]] ]))
-             (is (= (f [0 1 2]) [ [[0] [1 2]] [[0 1] [2]] ]))
-             )) }
-  (loop [result []
-         remaining coll]
-    (if-left [more (seq remaining)])
-  )
+(defn splits
+  { :test #(do
+             (is (= (splits ()) [ [() ()] ]))
+             (is (= (splits [0]) [ [() [0]] [[0] ()] ]))
+             (is (= (splits [0 1]) [ [() [0 1]] [[0] [1]] [[0 1] ()]]))
+             (is (= (splits [0 1 2]) [ [() [0 1 2]] [[0] [1 2]] [[0 1] [2]] [[0 1 2] ()]]))
+             (is (= (first (first (splits (range 1e32)))) ()))
+             ) }
+  [coll]
+    (lazy-cat
+      (take-while #(not (= nil (second %)))
+        (iterate (fn [ [prefix [middle & suffix]] ]
+                   (if (nil? middle)
+                     nil
+                     [(lazy-cat prefix [middle]) suffix]
+                   )
+                 )
+                 [() coll]
+        )
+      )
+      (if (empty? coll)
+        []
+        [[coll ()]]
+      )
+    )
 )
 
 (defn transpose
