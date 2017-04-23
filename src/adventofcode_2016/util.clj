@@ -104,6 +104,21 @@
     )
 )
 
+(defn split-around
+  { :test (fn [] (do
+                   (assert (= [] (split-around #(= 2 %) [])))
+                   (assert (= [[1] [3]] (split-around #(= 2 %) [1 2 3])))
+                   (assert (= [[0 1 2 3] [7 8 9]] (split-around #{4 5 6} (range 10))))
+                   (assert (= [[1] [2 3] [4 5]] (split-around #{0} [0 0 0 0 0 0 1 0 0 0 2 3 0 0 0 0 0 4 5])))
+                   (assert (= [[1]] (split-around #(not (= 1 %)) (take 1e6 (iterate inc 0)))))
+                   ))
+  }
+  [f coll]
+  (->> coll
+       (partition-by f)
+       (filter #(not (f (first %))))
+       ))
+
 (defn transpose
   "Transform seq [[a1 a2 ...] [b1 b2 ...] ...] to seq [[a1 b1 ...] [a2 b2 ...] ...]"
   {
