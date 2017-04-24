@@ -77,6 +77,11 @@
   [f a b & more]
   (apply f (cons b (cons a more))))
 
+(defn map-with-index
+  [f coll]
+    (map f coll (iterate inc 0))
+  )
+
 (defn splits
   { :test #(do
              (is (= (splits ()) [ [() ()] ]))
