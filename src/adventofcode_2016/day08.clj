@@ -95,6 +95,86 @@
         )
      ))
 
+(defmacro match-vector [expr & cases]
+  ;(println expr)
+  ;(doseq [case (partition 4 cases)] (println case))
+  (assert (= 0 (mod (count cases) 4)) "match-vector must be applied to 1+4n arguments.")
+  (doseq [ [case-word pattern arrow-word result-expr] (partition 4 cases) ]
+    (assert (= 'case case-word) (str "First form in a match case must be (symbol \"case\"), was: " case-word))
+    (assert (or (vector? pattern) (= '_ pattern)) (str "Second form in a match case must be _ or a vector, was: " (type pattern)))
+    (assert (= '=> arrow-word) (str "Third form in a match case must be (symbol \"=>\"), was: " arrow-word))
+  )
+
+  `(let [ vexpr (apply vector ~expr) ]
+    (for [
+          [case-word pattern arrow-word result-expr] (partition 4 cases)
+          ]
+      (do
+        (let [
+              matches-catchall (= '_ pattern)
+              matches-length (= (count pattern) (count vexpr))
+              matches-case (map (fn [pattern-element expr-element]
+                                  (if (symbol? pattern-element)
+                                    true
+                                    (= pattern-element expr-element)
+                                  )
+                                )
+                                pattern
+                                vexpr
+                           )
+             ]
+
+          (if (or matches-catchall (and matches-length matches-case))
+            (do
+              (println "This expression:" vexpr)
+              (println "Matches this pattern:" pattern)
+            )
+          )
+        )
+
+        [pattern result-expr]
+      )
+    )
+  )
+)
+
+(match-vector (range 4)
+  case [0 a 2 c] => true
+  case _ => false
+)
+
+(defn reduce-instruction-match
+  [state instruction]
+    (match-vector (first instruction)
+      case ["rect" dimensions] =>
+        (let [
+              [w h] (map #(read-string (apply str %)) (split-around #{\x} dimensions))
+              ]
+          (map-with-index
+            (fn [row, r]
+              (map-with-index
+                (fn [pixel, c]
+                  (or pixel
+                    (and (< r h) (< c w))
+                  ))
+                row
+              ))
+            state
+          )
+        )
+
+      case ["rotate" "row" "y" y "by" steps "steps"] =>
+        (rotate state (read-string index) (read-string steps))
+
+      case ["rotate" "column" "x" x "by" steps "steps"] =>
+        (-> state
+            transpose
+            (rotate (read-string x) (read-string steps))
+            transpose
+        )
+    ))
+
+
 (defn execute
   [instructions initial-state]
   (reduce reduce-instruction initial-state instructions)
