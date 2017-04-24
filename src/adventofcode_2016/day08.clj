@@ -57,8 +57,8 @@
              )
   }
   [state instruction]
-    (cond
-      (= "rect" (first instruction))
+    (case (first instruction)
+      "rect"
         (let [
               [w h] (map #(read-string (apply str %)) (split-around #{\x} (second instruction)))
               ]
@@ -75,17 +75,17 @@
           )
         )
 
-      (= "rotate" (first instruction))
+      "rotate"
         (let [
               vinstruction (apply vector instruction)
               index (read-string (vinstruction 3))
               steps (read-string (vinstruction 5))
               ]
-          (cond
-            (= "row" (second instruction))
+          (case (second instruction)
+            "row"
               (rotate state index steps)
 
-            (= "column" (second instruction))
+            "column"
               (-> state
                 transpose
                 (rotate index steps)
