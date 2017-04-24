@@ -67,10 +67,8 @@
               (map-with-index
                 (fn [pixel, c]
                   (or pixel
-                    (and
-                      (<= (inc r) h)
-                      (<= (inc c) w)
-                    )))
+                    (and (< r h) (< c w))
+                  ))
                 row
               ))
             state
