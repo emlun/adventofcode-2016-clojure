@@ -1,5 +1,6 @@
 (ns adventofcode-2016.day08
   (:require clojure.string)
+  (:require [clojure.test :refer [is]])
   (:require [adventofcode-2016.util :refer [count-filter map-with-index split-around transpose]])
 )
 
@@ -95,55 +96,133 @@
         )
      ))
 
+(defn matches-pattern?
+  { :test #(do
+             (is (true? (matches-pattern? '_ [0])))
+             (is (true? (matches-pattern? 'a [0 'foo])))
+
+             (is (true? (matches-pattern? '_ 0)))
+             (is (true? (matches-pattern? 'a 0)))
+
+             (is (true? (matches-pattern? 0 0)))
+             (is (false? (matches-pattern? 0 1)))
+
+             (is (true? (matches-pattern? [0] [0])))
+             (is (false? (matches-pattern? [0] [1])))
+
+             (is (true? (matches-pattern? ['a] [0])))
+             (is (true? (matches-pattern? ['a] [1])))
+             (is (true? (matches-pattern? ['a 0] [0 0])))
+             (is (false? (matches-pattern? ['a 1] [1 0])))
+             )
+  }
+  [pattern expr]
+    (cond
+      (symbol? pattern)
+        true
+
+      (vector? pattern)
+        (every? true? (map matches-pattern? pattern expr))
+
+      :else
+        (= pattern expr)
+    )
+)
+
+(defn make-binding
+  { :test #(do
+             (is (=
+                  (make-binding 'a 5)
+                  '[a 5]
+                  ))
+             (is (=
+                  (make-binding '[a 0] [5 0])
+                  '[a 5]
+                  ))
+             (is (=
+                  (make-binding '[a b] [5 0])
+                  '[a 5 b 0]
+                  ))
+             (is (=
+                  (make-binding '[a [b 1 c] [2]] [3 [4 5 6] [7]])
+                  '[a 3 b 4 c 6]
+                  ))
+             )
+  }
+  [pattern match-expr]
+    (cond
+      (symbol? pattern)
+        [ pattern match-expr ]
+
+      (vector? pattern)
+        (mapcat make-binding pattern match-expr)
+    )
+)
+
+(defn bind-match-around-result
+  { :test #(do
+             (is (=
+                  (bind-match-around-result 'a 5 'a)
+                  '(clojure.core/let [a 5] a)
+                  ))
+             (is (=
+                  (bind-match-around-result 'b 5 'b)
+                  '(clojure.core/let [b 5] b)
+                  ))
+             (is (=
+                  (bind-match-around-result [1 'a 2 ] [3 4 5] '(+ a 7))
+                  '(clojure.core/let [a 4] (+ a 7))
+                  ))
+             (is (=
+                  (bind-match-around-result '[1 a 2 b ] [3 4 5 6] '(+ a b 7))
+                  '(clojure.core/let [a 4 b 6] (+ a b 7))
+                  ))
+             (is (=
+                  (bind-match-around-result '[1 a 2 [b [c 3 d]] ] [4 5 6 [7 [8 9 10]] ] '(+ a b c d 11))
+                  '(clojure.core/let [a 5 b 7 c 8 d 10] (+ a b c d 11))
+                  ))
+             )
+  }
+  [pattern match-expr result-expr]
+    `(let [ ~@(make-binding pattern match-expr) ]
+       ~result-expr
+     )
+)
+
 (defmacro match-vector [expr & cases]
   ;(println expr)
   ;(doseq [case (partition 4 cases)] (println case))
   (assert (= 0 (mod (count cases) 4)) "match-vector must be applied to 1+4n arguments.")
   (doseq [ [case-word pattern arrow-word result-expr] (partition 4 cases) ]
     (assert (= 'case case-word) (str "First form in a match case must be (symbol \"case\"), was: " case-word))
-    (assert (or (vector? pattern) (= '_ pattern)) (str "Second form in a match case must be _ or a vector, was: " (type pattern)))
+    (assert (or (symbol? pattern) (vector? pattern)) (str "Second form in a match case must be a symbol or vector, was: " (type pattern)))
     (assert (= '=> arrow-word) (str "Third form in a match case must be (symbol \"=>\"), was: " arrow-word))
   )
 
-  `(let [ vexpr (apply vector ~expr) ]
-    (for [
-          [case-word pattern arrow-word result-expr] (partition 4 cases)
-          ]
-      (do
-        (let [
-              matches-catchall (= '_ pattern)
-              matches-length (= (count pattern) (count vexpr))
-              matches-case (map (fn [pattern-element expr-element]
-                                  (if (symbol? pattern-element)
-                                    true
-                                    (= pattern-element expr-element)
-                                  )
-                                )
-                                pattern
-                                vexpr
-                           )
-             ]
-
-          (if (or matches-catchall (and matches-length matches-case))
-            (do
-              (println "This expression:" vexpr)
-              (println "Matches this pattern:" pattern)
-            )
+  (if-let [
+         [_ pattern _ result-expr & cases-rest] (seq cases)
+       ]
+     `(let [the-expr# ~expr]
+        (if (matches-pattern? '~pattern the-expr#)
+          (let [ ~@(make-binding '~pattern the-expr#) ]
+            ~result-expr
           )
+          (match-vector the-expr# ~@cases-rest)
         )
-
-        [pattern result-expr]
-      )
-    )
+     )
+     `(assert false (str "No case matched expression:" ~expr))
   )
 )
 
-(match-vector (range 4)
-  case [0 a 2 c] => true
-  case _ => false
+(comment
+  (match-vector (range 4)
+    case [0 a 2 c] => (= 2 (+ a c))
+    case [0 a] => (= 2 (+ a 2))
+    case _ => false
+  )
 )
 
-(defn reduce-instruction-match
+(comment (defn reduce-instruction-match
   [state instruction]
     (match-vector (first instruction)
       case ["rect" dimensions] =>
@@ -173,6 +252,7 @@
             transpose
         )
     ))
+)
 
 
 (defn execute
