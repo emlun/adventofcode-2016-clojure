@@ -149,15 +149,14 @@
 
 (defn- match-vector-internal [value cases]
   (if-let [
-         [_ pattern _ result-expr & cases-rest] (seq cases)
-       ]
-
-     `(if (matches-pattern? '~pattern ~value)
-        (let [ ~@(make-binding pattern value) ]
-          ~result-expr
-        )
-        ~(match-vector-internal value cases-rest)
-      )
+           [_ pattern _ result-expr & cases-rest] (seq cases)
+           ]
+    `(if (matches-pattern? '~pattern ~value)
+       (let [ ~@(make-binding pattern value) ]
+         ~result-expr
+       )
+       ~(match-vector-internal value cases-rest)
+     )
 
      `(assert false (str "No case matched expression:" ~value))
   )
