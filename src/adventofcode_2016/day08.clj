@@ -96,39 +96,6 @@
         )
      ))
 
-(comment (defn reduce-instruction-match
-  [state instruction]
-    (match-vector (first instruction)
-      case ["rect" dimensions] =>
-        (let [
-              [w h] (map #(read-string (apply str %)) (split-around #{\x} dimensions))
-              ]
-          (map-with-index
-            (fn [row, r]
-              (map-with-index
-                (fn [pixel, c]
-                  (or pixel
-                    (and (< r h) (< c w))
-                  ))
-                row
-              ))
-            state
-          )
-        )
-
-      case ["rotate" "row" "y" y "by" steps "steps"] =>
-        (rotate state (read-string index) (read-string steps))
-
-      case ["rotate" "column" "x" x "by" steps "steps"] =>
-        (-> state
-            transpose
-            (rotate (read-string x) (read-string steps))
-            transpose
-        )
-    ))
-)
-
-
 (defn execute
   [instructions initial-state]
   (reduce reduce-instruction initial-state instructions)
