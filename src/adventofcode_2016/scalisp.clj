@@ -121,20 +121,20 @@
 { :test #(do
            (is (=
                 (make-binding 'a 'thing)
-                '[a (adventofcode-2016.day08/discard-values-outside-pattern 'a thing)]
+                '[a (adventofcode-2016.scalisp/discard-values-outside-pattern 'a thing)]
                 ))
            (is (=
                 (make-binding '[a 0] 'thing)
-                '[[a] (adventofcode-2016.day08/discard-values-outside-pattern '[a 0] thing)]
+                '[[a] (adventofcode-2016.scalisp/discard-values-outside-pattern '[a 0] thing)]
                 ))
            (is (=
                 (make-binding '[a b] 'thing)
-                '[[a b] (adventofcode-2016.day08/discard-values-outside-pattern '[a b] thing)]
+                '[[a b] (adventofcode-2016.scalisp/discard-values-outside-pattern '[a b] thing)]
                 ))
            (is (=
                 (make-binding '[a [b 1 c] [2]] 'thing)
                 '[
-                  [a [b c]] (adventofcode-2016.day08/discard-values-outside-pattern '[a [b 1 c] [2]] thing)
+                  [a [b c]] (adventofcode-2016.scalisp/discard-values-outside-pattern '[a [b 1 c] [2]] thing)
                   ]
                 ))
            )
