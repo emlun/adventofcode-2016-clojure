@@ -147,16 +147,7 @@
 )
 
 
-(defmacro match-vector-internal [value & cases]
-  ;(println value)
-  ;(doseq [case (partition 4 cases)] (println case))
-  (assert (= 0 (mod (count cases) 4)) "match-vector must be applied to 1+4n arguments.")
-  (doseq [ [case-word pattern arrow-word result-expr] (partition 4 cases) ]
-    (assert (= 'case case-word) (str "First form in a match case must be (symbol \"case\"), was: " case-word))
-    (assert (or (symbol? pattern) (vector? pattern)) (str "Second form in a match case must be a symbol or vector, was: " (type pattern)))
-    (assert (= '=> arrow-word) (str "Third form in a match case must be (symbol \"=>\"), was: " arrow-word))
-  )
-
+(defn- match-vector-internal [value cases]
   (if-let [
          [_ pattern _ result-expr & cases-rest] (seq cases)
        ]
@@ -165,7 +156,7 @@
         (let [ ~@(make-binding pattern value) ]
           ~result-expr
         )
-        (match-vector-internal ~value ~@cases-rest)
+        ~(match-vector-internal value cases-rest)
       )
 
      `(assert false (str "No case matched expression:" ~value))
@@ -173,10 +164,21 @@
 )
 
 (defmacro match-vector [expr & cases]
-  `(let [expr-value# ~expr]
-     (match-vector-internal expr-value# ~@cases)
+  ;(println value)
+  ;(doseq [case (partition 4 cases)] (println case))
+  (assert (= 0 (mod (count cases) 4)) "match-vector must be applied to 1+4n arguments.")
+  (doseq [ [case-word pattern arrow-word result-expr] (partition 4 cases) ]
+    (assert (= 'case case-word) (str "First form in a match case must be (symbol \"case\"), was: " case-word))
+    (assert (or (symbol? pattern) (vector? pattern)) (str "Second form in a match case must be a symbol or vector, was: " (type pattern)))
+    (assert (= '=> arrow-word) (str "Third form in a match case must be (symbol \"=>\"), was: " arrow-word))
+  )
+  (let [ expr-value-symbol (gensym) ]
+    `(let [~expr-value-symbol ~expr]
+       ~(match-vector-internal expr-value-symbol cases)
      )
   )
+)
+
 
 
 ; Examples to macroexpand during development
