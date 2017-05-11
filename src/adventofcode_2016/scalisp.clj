@@ -163,8 +163,6 @@
 )
 
 (defmacro match-vector [expr & cases]
-  ;(println value)
-  ;(doseq [case (partition 4 cases)] (println case))
   (assert (= 0 (mod (count cases) 4)) "match-vector must be applied to 1+4n arguments.")
   (doseq [ [case-word pattern arrow-word result-expr] (partition 4 cases) ]
     (assert (= 'case case-word) (str "First form in a match case must be (symbol \"case\"), was: " case-word))
