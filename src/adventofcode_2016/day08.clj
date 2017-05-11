@@ -2,6 +2,7 @@
   (:require clojure.string)
   (:require [clojure.test :refer [is]])
   (:require [adventofcode-2016.util :refer [count-filter map-with-index split-around transpose]])
+  (:require [adventofcode-2016.scalisp :as scalisp])
 )
 
 (def width 50)
@@ -54,14 +55,13 @@
 (defn reduce-instruction
   { :test #(do
              (assert (= [[1 2] [4 3]] (reduce-instruction [[1 2] [3 4]] ["rotate" "row" "2" "by" "1"])))
-             (assert (= [[1 2] [4 3]] (reduce-instruction [[1 2] [3 4]] ["rotate" "row" "2" "by" "1"])))
              )
   }
   [state instruction]
-    (case (first instruction)
-      "rect"
+    (scalisp/match-vector instruction
+      case ["rect" dimensions] =>
         (let [
-              [w h] (map #(read-string (apply str %)) (split-around #{\x} (second instruction)))
+              [w h] (map #(read-string (apply str %)) (split-around #{\x} dimensions))
               ]
           (map-with-index
             (fn [row, r]
@@ -76,25 +76,18 @@
           )
         )
 
-      "rotate"
-        (let [
-              vinstruction (apply vector instruction)
-              index (read-string (vinstruction 3))
-              steps (read-string (vinstruction 5))
-              ]
-          (case (second instruction)
-            "row"
-              (rotate state index steps)
+      case ["rotate" "row" "y" y "by" steps] =>
+        (rotate state (read-string y) (read-string steps))
 
-            "column"
-              (-> state
-                transpose
-                (rotate index steps)
-                transpose
-              )
-          )
+      case ["rotate" "column" "x" x "by" steps] =>
+        (-> state
+            transpose
+            (rotate (read-string x) (read-string steps))
+            transpose
         )
-     ))
+    )
+)
+
 
 (defn execute
   [instructions initial-state]
