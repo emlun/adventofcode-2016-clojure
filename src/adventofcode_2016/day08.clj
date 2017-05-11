@@ -110,10 +110,16 @@
              (is (true? (matches-pattern? [0] [0])))
              (is (false? (matches-pattern? [0] [1])))
 
+             (is (false? (matches-pattern? ['a] [])))
+             (is (false? (matches-pattern? [] [1])))
+             (is (false? (matches-pattern? ['a 0] [0 0 0])))
+             (is (false? (matches-pattern? '[a [1]] [1 [2 3]])))
+
              (is (true? (matches-pattern? ['a] [0])))
              (is (true? (matches-pattern? ['a] [1])))
              (is (true? (matches-pattern? ['a 0] [0 0])))
              (is (false? (matches-pattern? ['a 1] [1 0])))
+
              )
   }
   [pattern expr]
@@ -122,63 +128,139 @@
         true
 
       (vector? pattern)
-        (every? true? (map matches-pattern? pattern expr))
+        (and
+          (= (count pattern) (count expr))
+          (every? true? (map matches-pattern? pattern expr))
+        )
 
       :else
         (= pattern expr)
     )
 )
 
-(defn make-binding
+(defn discard-values-outside-pattern
   { :test #(do
              (is (=
-                  (make-binding 'a 5)
-                  '[a 5]
+                  (discard-values-outside-pattern 'a [1 2 3])
+                  [1 2 3]
                   ))
              (is (=
-                  (make-binding '[a 0] [5 0])
-                  '[a 5]
+                  (discard-values-outside-pattern '[a 2 b 4] [1 2 3 4])
+                  [1 3]
                   ))
              (is (=
-                  (make-binding '[a b] [5 0])
-                  '[a 5 b 0]
+                  (discard-values-outside-pattern '[a 2 [3 [b 5 c]] d [8 9]] [1 2 [3 [4 5 6]] 7 [8 9]])
+                  [1 [[4 6]] 7]
                   ))
              (is (=
-                  (make-binding '[a [b 1 c] [2]] [3 [4 5 6] [7]])
-                  '[a 3 b 4 c 6]
+                  (discard-values-outside-pattern '[a [b 3 c] [5]] [1 [2 3 4] [5]])
+                  [1 [2 4]]
                   ))
              )
   }
-  [pattern match-expr]
+  [ pattern value ]
+  { :pre [(or (symbol? pattern) (vector? pattern))] }
+
     (cond
       (symbol? pattern)
-        [ pattern match-expr ]
+        value
 
       (vector? pattern)
-        (mapcat make-binding pattern match-expr)
+        (filter #(not (and (seq? %) (empty? %)))
+          (mapcat (fn [pattern value]
+                 (if (or (symbol? pattern) (vector? pattern))
+                   [(discard-values-outside-pattern pattern value)]
+                   []
+               ))
+               pattern value
+          )
+        )
     )
 )
 
-(defn bind-match-around-result
+(defn discard-non-symbol-pattern-parts
   { :test #(do
              (is (=
-                  (bind-match-around-result 'a 5 'a)
+                  (discard-non-symbol-pattern-parts 'a)
+                  'a
+                  ))
+             (is (=
+                  (discard-non-symbol-pattern-parts '[a 2 b 4])
+                  '[a b]
+                  ))
+             (is (=
+                  (discard-non-symbol-pattern-parts '[a 2 [3 [b 5 c]] d [8 9]])
+                  '[a [[b c]] d]
+                  ))
+             )
+  }
+  [ pattern ]
+  { :pre [(or (symbol? pattern) (vector? pattern))] }
+
+    (cond
+      (symbol? pattern)
+        pattern
+
+      (vector? pattern)
+        (->> pattern
+          (filter #(or (symbol? %) (vector? %)))
+          (map discard-non-symbol-pattern-parts)
+          (filter #(or (symbol? %) (seq %)))
+          (apply vector)
+        )
+    )
+)
+
+(defn make-binding
+{ :test #(do
+           (is (=
+                (make-binding 'a 'thing)
+                '[a (adventofcode-2016.day08/discard-values-outside-pattern 'a thing)]
+                ))
+           (is (=
+                (make-binding '[a 0] 'thing)
+                '[[a] (adventofcode-2016.day08/discard-values-outside-pattern '[a 0] thing)]
+                ))
+           (is (=
+                (make-binding '[a b] 'thing)
+                '[[a b] (adventofcode-2016.day08/discard-values-outside-pattern '[a b] thing)]
+                ))
+           (is (=
+                (make-binding '[a [b 1 c] [2]] 'thing)
+                '[
+                  [a [b c]] (adventofcode-2016.day08/discard-values-outside-pattern '[a [b 1 c] [2]] thing)
+                  ]
+                ))
+           )
+ }
+  [pattern value]
+    [
+     (discard-non-symbol-pattern-parts pattern)
+     `(discard-values-outside-pattern '~pattern ~value)
+    ]
+)
+
+
+(defmacro bind-match-around-result
+  { :test #(do
+             (is (=
+                  (macroexpand-1 '(bind-match-around-result a 5 a))
                   '(clojure.core/let [a 5] a)
                   ))
              (is (=
-                  (bind-match-around-result 'b 5 'b)
+                  (macroexpand-1 '(bind-match-around-result b 5 b))
                   '(clojure.core/let [b 5] b)
                   ))
              (is (=
-                  (bind-match-around-result [1 'a 2 ] [3 4 5] '(+ a 7))
+                  (macroexpand-1 '(bind-match-around-result [1 a 2 ] [3 4 5] (+ a 7)))
                   '(clojure.core/let [a 4] (+ a 7))
                   ))
              (is (=
-                  (bind-match-around-result '[1 a 2 b ] [3 4 5 6] '(+ a b 7))
+                  (macroexpand-1 '(bind-match-around-result [1 a 2 b ] [3 4 5 6] (+ a b 7)))
                   '(clojure.core/let [a 4 b 6] (+ a b 7))
                   ))
              (is (=
-                  (bind-match-around-result '[1 a 2 [b [c 3 d]] ] [4 5 6 [7 [8 9 10]] ] '(+ a b c d 11))
+                  (macroexpand-1 '(bind-match-around-result [1 a 2 [b [c 3 d]] ] [4 5 6 [7 [8 9 10]] ] (+ a b c d 11)))
                   '(clojure.core/let [a 5 b 7 c 8 d 10] (+ a b c d 11))
                   ))
              )
@@ -189,8 +271,8 @@
      )
 )
 
-(defmacro match-vector [expr & cases]
-  ;(println expr)
+(defmacro match-vector-internal [value & cases]
+  ;(println value)
   ;(doseq [case (partition 4 cases)] (println case))
   (assert (= 0 (mod (count cases) 4)) "match-vector must be applied to 1+4n arguments.")
   (doseq [ [case-word pattern arrow-word result-expr] (partition 4 cases) ]
@@ -202,24 +284,231 @@
   (if-let [
          [_ pattern _ result-expr & cases-rest] (seq cases)
        ]
-     `(let [the-expr# ~expr]
-        (if (matches-pattern? '~pattern the-expr#)
-          (let [ ~@(make-binding '~pattern the-expr#) ]
-            ~result-expr
-          )
-          (match-vector the-expr# ~@cases-rest)
+
+     `(if (matches-pattern? '~pattern ~value)
+        (let [ ~@(make-binding pattern value) ]
+          ~result-expr
         )
-     )
-     `(assert false (str "No case matched expression:" ~expr))
+        (match-vector-internal ~value ~@cases-rest)
+      )
+
+     `(assert false (str "No case matched expression:" ~value))
   )
 )
 
-(comment
-  (match-vector (range 4)
+(defmacro match-vector [expr & cases]
+  `(let [expr-value# ~expr]
+     (match-vector-internal expr-value# ~@cases)
+     )
+  )
+
+(def test-code '(match-vector (range 4)
     case [0 a 2 c] => (= 2 (+ a c))
     case [0 a] => (= 2 (+ a 2))
     case _ => false
   )
+)
+
+(match-vector (range 2)
+  case [0 a 2 c] => (do
+                      (println "Matched first case")
+                      (println "a: " a)
+                      (println "c: " c)
+                      (+ a c)
+                      )
+  case [0 a] => (do
+                  (println "Matched second case")
+                  (println "a: " a)
+                  (+ a 2)
+                  )
+
+  case _ => (do
+              (println "Matched third case")
+              (println "_: " _)
+              false
+              )
+)
+
+
+(clojure.core/let [expr-value__26408__auto__ (range 2)]
+  (adventofcode-2016.day08/match-vector-internal expr-value__26408__auto__
+    case [0 a 2 c] => (do
+                        (println "Matched first case")
+                        (println "a: " a)
+                        (println "c: " c)
+                        (+ a c)
+                        )
+
+    case [0 a] => (do
+                    (println "Matched second case")
+                    (println "a: " a)
+                    (+ a 2)
+                    )
+
+    case _ => (do
+                (println "Matched third case")
+                (println "_: " _)
+                false
+                )
+))
+
+(clojure.core/let [expr-value__26408__auto__ (range 2)]
+
+  (if (adventofcode-2016.day08/matches-pattern? (quote [0 a 2 c]) expr-value__26408__auto__)
+
+    (clojure.core/let [
+                       [a c] (adventofcode-2016.day08/discard-values-outside-pattern (quote [0 a 2 c]) expr-value__26408__auto__)
+                       ]
+      (do
+        (println "Matched first case")
+        (println "a: " a)
+        (println "c: " c)
+        (+ a c)
+        )
+    )
+
+    (adventofcode-2016.day08/match-vector-internal expr-value__26408__auto__
+      case [0 a] => (do
+                      (println "Matched second case")
+                      (println "a: " a)
+                      (+ a 2)
+                      )
+      case _ => (do
+                  (println "Matched third case")
+                  (println "_: " _)
+                  false
+                  )
+)))
+
+(clojure.core/let [expr-value__26408__auto__ (range 2)]
+
+  (if (adventofcode-2016.day08/matches-pattern? (quote [0 a 2 c]) expr-value__26408__auto__)
+
+    (clojure.core/let [
+                       [a c] (adventofcode-2016.day08/discard-values-outside-pattern (quote [0 a 2 c]) expr-value__26408__auto__)
+                       ]
+      (do
+        (println "Matched first case")
+        (println "a: " a)
+        (println "c: " c)
+        (+ a c)
+        )
+    )
+
+
+    (if (adventofcode-2016.day08/matches-pattern? (quote [0 a]) expr-value__26408__auto__)
+
+      (clojure.core/let [
+                         [a] (adventofcode-2016.day08/discard-values-outside-pattern (quote [0 a]) expr-value__26408__auto__)
+                         ]
+        (do
+          (println "Matched second case")
+          (println "a: " a)
+          (+ a 2)
+          )
+      )
+
+      (adventofcode-2016.day08/match-vector-internal expr-value__26408__auto__
+        case _ => (do
+                    (println "Matched third case")
+                    (println "_: " _)
+                    false
+                    )
+))))
+
+(clojure.core/let [expr-value__26408__auto__ (range 2)]
+
+  (if (adventofcode-2016.day08/matches-pattern? (quote [0 a 2 c]) expr-value__26408__auto__)
+
+    (clojure.core/let [
+                       [a c] (adventofcode-2016.day08/discard-values-outside-pattern (quote [0 a 2 c]) expr-value__26408__auto__)
+                       ]
+      (do
+        (println "Matched first case")
+        (println "a: " a)
+        (println "c: " c)
+        (+ a c)
+        )
+    )
+
+
+    (if (adventofcode-2016.day08/matches-pattern? (quote [0 a]) expr-value__26408__auto__)
+
+      (clojure.core/let [
+                         [a] (adventofcode-2016.day08/discard-values-outside-pattern (quote [0 a]) expr-value__26408__auto__)
+                         ]
+        (do
+          (println "Matched second case")
+          (println "a: " a)
+          (+ a 2)
+          )
+      )
+
+      (if (adventofcode-2016.day08/matches-pattern? (quote _) expr-value__26408__auto__)
+
+        (clojure.core/let [
+                           _ (adventofcode-2016.day08/discard-values-outside-pattern (quote _) expr-value__26408__auto__)
+                           ]
+          (do
+            (println "Matched third case")
+            (println "_: " _)
+            false
+            )
+        )
+
+        (adventofcode-2016.day08/match-vector-internal expr-value__26408__auto__)
+))))
+
+(clojure.core/let [expr-value__26408__auto__ (range 2)]
+
+  (if (adventofcode-2016.day08/matches-pattern? (quote [0 a 2 c]) expr-value__26408__auto__)
+
+    (clojure.core/let [
+                       [a c] (adventofcode-2016.day08/discard-values-outside-pattern (quote [0 a 2 c]) expr-value__26408__auto__)
+                       ]
+      (do
+        (println "Matched first case")
+        (println "a: " a)
+        (println "c: " c)
+        (+ a c)
+        )
+    )
+
+
+    (if (adventofcode-2016.day08/matches-pattern? (quote [0 a]) expr-value__26408__auto__)
+
+      (clojure.core/let [
+                         [a] (adventofcode-2016.day08/discard-values-outside-pattern (quote [0 a]) expr-value__26408__auto__)
+                         ]
+        (do
+          (println "Matched second case")
+          (println "a: " a)
+          (+ a 2)
+          )
+      )
+
+      (if (adventofcode-2016.day08/matches-pattern? (quote _) expr-value__26408__auto__)
+
+        (clojure.core/let [
+                           _ (adventofcode-2016.day08/discard-values-outside-pattern (quote _) expr-value__26408__auto__)
+                           ]
+          (do
+            (println "Matched third case")
+            (println "_: " _)
+            false
+            )
+        )
+
+        (clojure.core/assert false (clojure.core/str "No case matched expression:" expr-value__26408__auto__))
+))))
+
+
+(def test-code-internal
+  '(match-vector-internal expr-value
+     case [0 a 2 c] => (= 2 (+ a c))
+     case [0 a] => (= 2 (+ a 2))
+     case _ => false
+   )
 )
 
 (comment (defn reduce-instruction-match
