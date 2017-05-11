@@ -84,7 +84,7 @@
     )
 )
 
-(defn discard-non-symbol-pattern-parts
+(defn- discard-non-symbol-pattern-parts
   { :test #(do
              (is (=
                   (discard-non-symbol-pattern-parts 'a)
@@ -117,7 +117,7 @@
     )
 )
 
-(defn make-binding
+(defn- make-binding
 { :test #(do
            (is (=
                 (make-binding 'a 'thing)
