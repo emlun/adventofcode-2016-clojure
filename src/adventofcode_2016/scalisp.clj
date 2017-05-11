@@ -198,3 +198,15 @@
   case [0 a] => (= 2 (+ a 2))
   case _ => false
 )
+
+
+(match-vector [1 2 [3 [4] [] 5 [[[6] 7] 8] 9]]
+  case [a b [c [d] [] e [[[f] g] h] i]] => [a b c d e f g h i]
+  case _ => false
+)
+
+(match-vector '(1 2 (3 (4) () 5 (((6) 7) 8) 9))
+  case [a b [c [d] [] 42 [[[f] g] h] i]] => (println "Won't match")
+  case [a b [c [d] [] 5 [[[f] g] h] i]] => (do (println "Will match") [a b c d f g h i])
+  case _ => false
+)
