@@ -178,6 +178,9 @@
      )
   )
 
+
+; Examples to macroexpand during development
+
 (def test-code '(match-vector (range 4)
     case [0 a 2 c] => (= 2 (+ a c))
     case [0 a] => (= 2 (+ a 2))
@@ -192,6 +195,9 @@
      case _ => false
    )
 )
+
+
+; Usage examples
 
 (match-vector (range 4)
   case [0 a 2 c] => (= 2 (+ a c))
