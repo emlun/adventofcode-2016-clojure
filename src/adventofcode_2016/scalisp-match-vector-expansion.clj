@@ -1,3 +1,7 @@
+; This is now outdated, as match-vector-internal is no longer a recursive macro
+; but instead a recursive function. The macro is now therefore expanded all at
+; once.
+
 ; No expansion
 (match-vector (range 2)
   case [0 a 2 c] => (do
