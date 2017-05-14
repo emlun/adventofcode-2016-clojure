@@ -40,6 +40,23 @@
                     :terminate? #(< 1000 %)
                     })
                   ))
+             (is (=
+                  nil
+                  (bfs {
+                    :generate-next-states (fn [i] [])
+                    :initial-state 0
+                    :terminate? (constantly false)
+                    })
+                  ))
+             (is (=
+                  nil
+                  (bfs {
+                    :generate-next-states (fn [i] [(inc i)])
+                    :initial-state 0
+                    :skip? (fn [state history] (> state 1000))
+                    :terminate? (constantly false)
+                    })
+                  ))
              ))}
   [{
     :keys [generate-next-states initial-state skip? terminate?]
@@ -48,15 +65,18 @@
 
   (let [
         initial-branch [initial-state []] ; [state history]
-        branch-sequence (apply concat (iterate
-                                        (fn [branches]
-                                          (mapcat
-                                            (partial bfs-expand generate-next-states skip?)
-                                            branches
-                                            )
-                                          )
-                                        [initial-branch]
-                                        ))
+        branch-sequence (apply concat
+                               (take-while seq
+                                           (iterate
+                                             (fn [branches]
+                                               (mapcat
+                                                 (partial bfs-expand generate-next-states skip?)
+                                                 branches
+                                                 )
+                                               )
+                                             [initial-branch]
+                                             ))
+                        )
         ]
     (->> branch-sequence
       (filter (fn [[state history]] (terminate? state)))
