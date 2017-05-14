@@ -167,19 +167,19 @@
   )
 )
 
-(def initial-registers { 'a 0, 'b 0, 'c 0, 'd 0 })
-
 (defn solve
   "solve day 12 of Advent of Code 2016"
   [input-lines & args]
-  (let [ final-state (-> input-lines
-                         (parse-instructions)
-                         (execute initial-registers)
-                         )
-       ]
-    (do
+  (let [ program (parse-instructions input-lines) ]
+    (doseq [ [part initial-registers] [
+                                       ["A" { 'a 0, 'b 0, 'c 0, 'd 0 }]
+                                       ["B" { 'a 0, 'b 0, 'c 1, 'd 0 }]
+                                       ]
+            ]
+      (println part ":")
+      (println "Initial state:" initial-registers)
       (println "Final registers state:")
-      (println (:registers final-state))
+      (println (:registers (execute program initial-registers)))
       )
   )
 )
