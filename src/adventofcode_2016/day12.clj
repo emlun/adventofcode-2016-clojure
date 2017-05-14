@@ -2,7 +2,6 @@
   (:refer-clojure :exclude [resolve])
   (:require clojure.string)
   (:require [clojure.test :refer [is]])
-  (:require [adventofcode-2016.util :refer [count-filter map-with-index split-around transpose]])
   (:require [adventofcode-2016.scalisp :as scalisp])
 )
 
