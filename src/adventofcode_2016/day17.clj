@@ -52,10 +52,10 @@
   { :test #(do
              (is (=
                   [
-                   {:pos {:x 0, :y -1}, :path [\U], :previous-door-open true}
-                   {:pos {:x 0, :y 1}, :path [\D], :previous-door-open true}
-                   {:pos {:x -1, :y 0}, :path [\L], :previous-door-open true}
-                   {:pos {:x 1, :y 0}, :path [\R], :previous-door-open false}
+                   {:pos {:x 0, :y -1}, :path ["U"], :previous-door-open true}
+                   {:pos {:x 0, :y 1}, :path ["D"], :previous-door-open true}
+                   {:pos {:x -1, :y 0}, :path ["L"], :previous-door-open true}
+                   {:pos {:x 1, :y 0}, :path ["R"], :previous-door-open false}
                    ]
                   (generate-next-states "hijkl" { :pos { :x 0, :y 0 }, :path [] })
                   ))
