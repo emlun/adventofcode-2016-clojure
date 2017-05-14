@@ -57,10 +57,14 @@
             (is (false? (halted? { :program [ 0 ], :eip 0 })))
             (is (true? (halted? { :program [ 0 ], :eip 1 })))
             (is (false? (halted? { :program [ 0 ], :eip 0 })))
+            (is (true? (halted? { :program [ 0 ], :eip -1 })))
             )
   }
   [state]
-  (>= (:eip state) (count (:program state)))
+  (or
+    (>= (:eip state) (count (:program state)))
+    (< (:eip state) 0)
+  )
 )
 
 (defn resolve
