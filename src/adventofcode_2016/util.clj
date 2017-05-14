@@ -12,6 +12,37 @@
   (max n (-' n))
 )
 
+(defn bfs
+  { :test (fn [] (do
+             (is (=
+                  0
+                  (bfs
+                    (constantly true)
+                    #(iterate inc %)
+                    0
+                  )
+                  ))
+             (is (=
+                  21
+                  (bfs
+                    #(< 20 %)
+                    (fn [i] [(dec i) (inc i)])
+                    0
+                  )
+                  ))
+             ))}
+  [terminate? generate-next-states initial-state]
+
+  (let [
+        state-sequence (apply concat (iterate #(mapcat generate-next-states %) [initial-state]))
+        ]
+    (->> state-sequence
+      (filter terminate?)
+      (first)
+    )
+  )
+)
+
 (defn count=
   "([value] [value coll])
   Shortcut for (count (filter #(= value %) coll)). Returns a curried function if called without coll."
