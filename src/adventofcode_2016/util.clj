@@ -2,6 +2,7 @@
   (:require [clojure.test :refer [is]])
 )
 
+(declare bfs-expand)
 (declare count-filter)
 
 (defn abs
@@ -16,29 +17,92 @@
   { :test (fn [] (do
              (is (=
                   0
-                  (bfs
-                    (constantly true)
-                    #(iterate inc %)
-                    0
-                  )
+                  (bfs {
+                    :terminate? (constantly true)
+                    :generate-next-states #(iterate inc %)
+                    :initial-state 0
+                    })
                   ))
              (is (=
-                  21
-                  (bfs
-                    #(< 20 %)
-                    (fn [i] [(dec i) (inc i)])
-                    0
-                  )
+                  11
+                  (bfs {
+                    :generate-next-states (fn [i] [(dec i) (inc i)])
+                    :initial-state 0
+                    :terminate? #(< 10 %)
+                    })
+                  ))
+             (is (=
+                  1001
+                  (bfs {
+                    :generate-next-states (fn [i] [(dec i) (inc i)])
+                    :initial-state 0
+                    :skip? (fn [state history] (< state (last history)))
+                    :terminate? #(< 1000 %)
+                    })
                   ))
              ))}
-  [terminate? generate-next-states initial-state]
+  [{
+    :keys [generate-next-states initial-state skip? terminate?]
+    :or { skip? (constantly false) }
+    }]
 
   (let [
-        state-sequence (apply concat (iterate #(mapcat generate-next-states %) [initial-state]))
+        initial-branch [initial-state []] ; [state history]
+        branch-sequence (apply concat (iterate
+                                        (fn [branches]
+                                          (mapcat
+                                            (partial bfs-expand generate-next-states skip?)
+                                            branches
+                                            )
+                                          )
+                                        [initial-branch]
+                                        ))
         ]
-    (->> state-sequence
-      (filter terminate?)
+    (->> branch-sequence
+      (filter (fn [[state history]] (terminate? state)))
       (first)
+      (first)
+    )
+  )
+)
+
+(defn- bfs-expand
+  { :test #(do
+             (is (=
+                  [ [1 [0]] [-1 [0]] ]
+                  (bfs-expand
+                    (fn [i] [(inc i) (dec i)])
+                    (constantly false)
+                    [0 []]
+                    )
+                  ))
+             (is (=
+                  [ [2 [0 1]] [0 [0 1]] ]
+                  (bfs-expand
+                    (fn [i] [(inc i) (dec i)])
+                    (constantly false)
+                    [1 [0]]
+                    )
+                  ))
+             (is (=
+                  []
+                  (bfs-expand
+                    (fn [i] [(inc i) (dec i)])
+                    (constantly true)
+                    [1 [0]]
+                    )
+                  ))
+             )}
+  [generate-next-states skip? [state history]]
+  (let [
+        next-history (conj history state)
+        ]
+    (filter
+      #(not (apply skip? %))
+      (map
+        (fn [state] [ state next-history ])
+        (generate-next-states state)
+      )
     )
   )
 )
