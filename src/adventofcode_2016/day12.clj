@@ -49,7 +49,7 @@
     )
 )
 
-(defn parse-instructions [ lines ] (map parse-instruction lines))
+(defn parse-instructions [ lines ] (mapv parse-instruction lines))
 
 (defn halted?
   { :test #(do
