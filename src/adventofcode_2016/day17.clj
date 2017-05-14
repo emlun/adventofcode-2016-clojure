@@ -101,41 +101,90 @@
 (defn find-path
   { :test #(do
              (is (=
+               nil
+               (find-path { :x 4, :y 4 } "hijkl" (constantly false))
+               ))
+             (is (=
                "DDRRRD"
-               (find-path { :x 4, :y 4 } "ihgpwlah")
+               (apply str (:path (find-path { :x 4, :y 4 } "ihgpwlah" (fn [state] (= (:pos state) { :x 3, :y 3 })))))
                ))
              (is (=
                "DDUDRLRRUDRD"
-               (find-path { :x 4, :y 4 } "kglvqrro")
+               (apply str (:path (find-path { :x 4, :y 4 } "kglvqrro" (fn [state] (= (:pos state) { :x 3, :y 3 })))))
                ))
              (is (=
                "DRURDRUDDLLDLUURRDULRLDUUDDDRR"
-               (find-path { :x 4, :y 4 } "ulqzkmiv")
+               (apply str (:path (find-path { :x 4, :y 4 } "ulqzkmiv" (fn [state] (= (:pos state) { :x 3, :y 3 })))))
                ))
              )}
-  [map-dimensions passcode]
-  (let [
-        target { :x (dec (:x map-dimensions))
-                 :y (dec (:y map-dimensions))
-                }
-        ]
-    (apply str (:path
-      (bfs {
-            :initial-state {
-                            :path []
-                            :pos { :x 0 :y 0 }
-                            :previous-door-open true
-                            }
-            :terminate? (fn [state] (= target (:pos state)))
-            :generate-next-states (partial generate-next-states passcode)
-            :skip? (fn [state history] (not (valid-state? map-dimensions state)))
-            })
-    ))
-  )
+  [map-dimensions passcode terminate? finished?]
+    (bfs {
+          :initial-state {
+                          :path []
+                          :pos { :x 0 :y 0 }
+                          :previous-door-open true
+                          }
+          :terminate? terminate?
+          :generate-next-states (partial generate-next-states passcode)
+          :skip? (fn [state history] (or
+                                       (not (valid-state? map-dimensions state))
+                                       (finished? (last history))
+                                       ))
+          })
 )
 
 (defn solve
   "solve day 17 of Advent of Code 2016"
   [input-lines & args]
-  (println "Shortest path: " (apply str (find-path { :x 4, :y 4 } (first input-lines))))
+  (let [
+        map-dimensions { :x 4, :y 4 }
+        target { :x (dec (:x map-dimensions))
+                 :y (dec (:y map-dimensions))
+                }
+        passcode (first input-lines)
+        finished? (fn [state] (= target (:pos state)))
+        finish-states (atom #{})
+        longest-path (atom [])
+        check-part-b-terminate? (fn [state]
+                                  (do
+                                    (println
+                                      "Current longest path:"
+                                      (count @longest-path)
+                                      "; finish states:"
+                                      (count @finish-states)
+                                      )
+
+                                    (swap!
+                                      longest-path
+                                      (fn [current-longest-path candidate-path]
+                                        (if (and
+                                              (> (count candidate-path) (count current-longest-path))
+                                              (= target (:pos state))
+                                              )
+                                          candidate-path
+                                          current-longest-path
+                                          )
+                                        )
+                                      (:path state)
+                                      )
+
+                                    (swap!
+                                      finish-states
+                                      (fn [current]
+                                        (if (= target (:pos state))
+                                          (conj current state)
+                                          current
+                                          )
+                                        )
+                                      )
+
+                                    false
+                                    ))
+        ]
+    (do
+      (println "Shortest path: " (apply str (:path (find-path map-dimensions passcode finished? finished?))))
+      (find-path map-dimensions passcode check-part-b-terminate? finished?)
+      (println "Longest path: " (count @longest-path) (apply str @longest-path))
+    )
+  )
 )
