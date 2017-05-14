@@ -104,6 +104,14 @@
                "DDRRRD"
                (find-path { :x 4, :y 4 } "ihgpwlah")
                ))
+             (is (=
+               "DDUDRLRRUDRD"
+               (find-path { :x 4, :y 4 } "kglvqrro")
+               ))
+             (is (=
+               "DRURDRUDDLLDLUURRDULRLDUUDDDRR"
+               (find-path { :x 4, :y 4 } "ulqzkmiv")
+               ))
              )}
   [map-dimensions passcode]
   (let [
