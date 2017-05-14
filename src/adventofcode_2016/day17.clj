@@ -41,6 +41,13 @@
   )
 )
 
+(def deltas {
+             :U { :x 0, :y -1 }
+             :D { :x 0, :y 1 }
+             :L { :x -1, :y 0 }
+             :R { :x 1, :y 0 }
+             })
+
 (defn generate-next-states
   { :test #(do
              (is (=
@@ -57,28 +64,16 @@
     (let [
           options (open-state passcode (:path state))
           ]
-      [
-       (-> state
-          (update-in [:pos :y] dec)
-          (update :path #(conj % \U))
-          (assoc :previous-door-open (:U options))
-          )
-       (-> state
-          (update-in [:pos :y] inc)
-          (update :path #(conj % \D))
-          (assoc :previous-door-open (:D options))
-          )
-       (-> state
-          (update-in [:pos :x] dec)
-          (update :path #(conj % \L))
-          (assoc :previous-door-open (:L options))
-          )
-       (-> state
-          (update-in [:pos :x] inc)
-          (update :path #(conj % \R))
-          (assoc :previous-door-open (:R options))
-          )
-      ]
+      (map
+        (fn [direction]
+         (-> state
+            (update :pos #(merge-with + % (get deltas direction)))
+            (update :path #(conj % (name direction)))
+            (assoc :previous-door-open (get options direction))
+            )
+        )
+        [ :U :D :L :R ]
+        )
     )
 )
 
@@ -116,7 +111,7 @@
                  :y (dec (:y map-dimensions))
                 }
         ]
-    (:path
+    (apply str (:path
       (bfs {
             :initial-state {
                             :path []
@@ -127,7 +122,7 @@
             :generate-next-states (partial generate-next-states passcode)
             :skip? (fn [state history] (not (valid-state? map-dimensions state)))
             })
-    )
+    ))
   )
 )
 
